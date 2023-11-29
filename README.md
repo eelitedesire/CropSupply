@@ -56,7 +56,3 @@ To develop and deploy the smart contract locally:
 ## Contributing
 
 Contributions are welcome! Feel free to open issues and pull requests.
-
-## License
-
-This smart contract is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
