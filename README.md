@@ -46,6 +46,7 @@ To develop and deploy the smart contract locally:
 
 1. **Compile:**
    - Compile the smart contract using the Solidity compiler.
+     [REMIX IDE](https://remix.ethereum.org)
 
 2. **Deploy:**
    - Deploy the smart contract to a local Ethereum network or a testnet.
