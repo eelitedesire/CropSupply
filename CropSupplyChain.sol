@@ -22,16 +22,35 @@ contract CropSupplyChain {
     uint256 public cropCount;
 
     // Event to log the harvesting of a crop
-    event Harvested(uint256 cropId, address indexed farmer);
+    event CropHarvested(uint256 cropId, address indexed farmer);
 
     // Event to log the distribution of a crop
-    event Distributed(uint256 cropId, address indexed distributor);
+    event CropDistributed(uint256 cropId, address indexed distributor);
 
     // Event to log the consumption of a crop
-    event Consumed(uint256 cropId, address indexed consumer);
+    event CropConsumed(uint256 cropId, address indexed consumer);
+
+    // Modifier to restrict functions to authorized users
+    modifier onlyFarmer() {
+        require(msg.sender == crops[cropCount].farmer, "Only the farmer can call this function");
+        _;
+    }
+
+    modifier onlyDistributor() {
+        require(msg.sender == crops[cropCount].distributor, "Only the distributor can call this function");
+        _;
+    }
+
+    modifier onlyConsumer() {
+        require(msg.sender == crops[cropCount].consumer, "Only the consumer can call this function");
+        _;
+    }
 
     // Function to harvest a new crop
     function harvestCrop(string memory _name) public {
+        // Add input validation
+        require(bytes(_name).length > 0, "Crop name cannot be empty");
+
         // Increment cropCount to generate a unique ID
         cropCount++;
         // Create a new Crop instance and store it in the mapping
@@ -45,33 +64,33 @@ contract CropSupplyChain {
             false,     // Set isDistributed to false
             false      // Set isConsumed to false
         );
-        // Emit Harvested event to log the action
-        emit Harvested(cropCount, msg.sender);
+        // Emit CropHarvested event to log the action
+        emit CropHarvested(cropCount, msg.sender);
     }
 
     // Function to distribute a harvested crop
-    function distributeCrop(uint256 _cropId, address _distributor) public {
+    function distributeCrop(uint256 _cropId, address _distributor) public onlyFarmer {
         // Retrieve the crop using the provided crop ID
         Crop storage crop = crops[_cropId];
-        // Check if the crop is available for distribution
+        // Require distributor approval
         require(crop.isHarvested && !crop.isDistributed, "Crop not available for distribution");
         // Set the distributor's address and update the distribution status
         crop.distributor = _distributor;
         crop.isDistributed = true;
-        // Emit Distributed event to log the action
-        emit Distributed(_cropId, _distributor);
+        // Emit CropDistributed event to log the action
+        emit CropDistributed(_cropId, _distributor);
     }
 
     // Function to consume a distributed crop
-    function consumeCrop(uint256 _cropId, address _consumer) public {
+    function consumeCrop(uint256 _cropId) public onlyDistributor {
         // Retrieve the crop using the provided crop ID
         Crop storage crop = crops[_cropId];
-        // Check if the crop is available for consumption
+        // Require consumer approval
         require(crop.isHarvested && crop.isDistributed && !crop.isConsumed, "Crop not available for consumption");
         // Set the consumer's address and update the consumption status
-        crop.consumer = _consumer;
+        crop.consumer = msg.sender;
         crop.isConsumed = true;
-        // Emit Consumed event to log the action
-        emit Consumed(_cropId, _consumer);
+        // Emit CropConsumed event to log the action
+        emit CropConsumed(_cropId, msg.sender);
     }
 }
